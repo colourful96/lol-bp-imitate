@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useLolStore } from '@/store/lolStore'
-const lolStore = useLolStore()
-
-const heroes = ref(lolStore.heroes)
-console.log(heroes.value)
+import { defineProps, ref } from 'vue';
+const props = defineProps<{
+  heroData?: never[]
+}>()
+const heroData = ref(props.heroData);
+console.log(heroData, 'heroData');
 </script>
 
 <template>
-  <div></div>
+  <ul>
+    <li v-for="item in heroData" :key="item.heroId">{{item.name}}</li>
+  </ul>
 </template>
 
 <style scoped></style>

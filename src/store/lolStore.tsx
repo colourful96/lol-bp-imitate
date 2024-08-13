@@ -3,7 +3,7 @@ import { getHeroes } from '@/api/getData'
 
 export const useLolStore = defineStore('lol', {
   state: () => ({
-    lol: 'lol',
+    count: 1,
     heroes: []
   }),
   getters: {},
@@ -11,7 +11,8 @@ export const useLolStore = defineStore('lol', {
     async getHeroes() {
       const resp = await getHeroes()
       if (resp.status === 200) {
-        this.heroes = resp.data.hero
+        this.$patch({ heroes: resp.data.hero })
+        return resp.data.hero;
       }
     }
   }
