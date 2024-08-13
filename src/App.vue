@@ -1,15 +1,22 @@
 <script setup lang="ts">
+import HeroesSelect from '@/components/HeroesSelect.vue'
+import { onMounted } from 'vue'
+import { useLolStore } from '@/store/lolStore'
 
+const lolStore = useLolStore()
+
+onMounted(() => {
+  lolStore.getHeroes()
+})
 </script>
 
 <template>
-    <div>
-      app
-    </div>
+  <div>
+    <HeroesSelect></HeroesSelect>
+  </div>
 </template>
 
 <style scoped>
-
 @media (min-width: 1024px) {
   header {
     display: flex;
