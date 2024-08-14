@@ -4,17 +4,16 @@ import { onMounted, ref } from 'vue'
 import { useLolStore } from '@/store/lolStore'
 
 const lolStore = useLolStore()
-const heroes = ref([]);
+const heroes = ref([])
 
 onMounted(async () => {
-  heroes.value =  await lolStore.getHeroes();
+  heroes.value = await lolStore.getHeroes()
 })
-
 </script>
 
 <template>
   <div>
-    <HeroesSelect :heroData="heroes"></HeroesSelect>
+    <HeroesSelect></HeroesSelect>
   </div>
 </template>
 
