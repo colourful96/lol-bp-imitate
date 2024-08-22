@@ -1,20 +1,8 @@
 <script setup lang="ts">
-import HeroesSelect from '@/components/HeroesSelect.vue'
-import { onMounted, ref } from 'vue'
-import { useLolStore } from '@/store/lolStore'
-
-const lolStore = useLolStore()
-const heroes = ref([])
-
-onMounted(async () => {
-  heroes.value = await lolStore.getHeroes()
-})
 </script>
 
 <template>
-  <div>
-    <HeroesSelect></HeroesSelect>
-  </div>
+  <router-view></router-view>
 </template>
 
 <style scoped>

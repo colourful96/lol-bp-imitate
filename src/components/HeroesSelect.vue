@@ -4,12 +4,12 @@ import { useLolStore } from '@/store/lolStore'
 
 const store = useLolStore()
 const tabs = [
-  { id: '1', name: '全部' },
-  { id: '2', name: '上单' },
-  { id: '3', name: '打野' },
-  { id: '4', name: '中单' },
-  { id: '5', name: '射手' },
-  { id: '6', name: '辅助' }
+  // { id: '1', name: '全部' },
+  // { id: '2', name: '上单' },
+  // { id: '3', name: '打野' },
+  // { id: '4', name: '中单' },
+  // { id: '5', name: '射手' },
+  // { id: '6', name: '辅助' }
 ]
 const baseImgUrl = 'https://game.gtimg.cn/images/lol/act/img/champion/'
 
@@ -31,16 +31,16 @@ watch(
 
 <template>
   <div class="heroesSelect-container">
-    <div class="tabs">
-      <div
-        :class="{ 'tab-item': true, 'tab-active': currentTab === tab.id }"
-        v-for="tab in tabs"
-        :key="tab.id"
-        @click="currentTab = tab.id"
-      >
-        {{ tab.name }}
-      </div>
-    </div>
+<!--    <div class="tabs">-->
+<!--      <div-->
+<!--        :class="{ 'tab-item': true, 'tab-active': currentTab === tab.id }"-->
+<!--        v-for="tab in tabs"-->
+<!--        :key="tab.id"-->
+<!--        @click="currentTab = tab.id"-->
+<!--      >-->
+<!--        {{ tab.name }}-->
+<!--      </div>-->
+<!--    </div>-->
     <div class="hero-wrapper">
       <div class="hero-item" v-for="hero in heroData" :key="hero.heroId">
         <div class="hero-item-img">
@@ -56,7 +56,7 @@ watch(
 .heroesSelect-container {
   width: 1240px;
   border: 1px solid;
-  margin: 0 auto;
+  margin: 60px auto;
   min-width: 1240px;
 }
 
@@ -80,6 +80,9 @@ watch(
 .hero-wrapper {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+  height: 80vh;
+  overflow: auto;
   .hero-item {
     cursor: pointer;
     .hero-item-name {
