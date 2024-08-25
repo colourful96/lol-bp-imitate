@@ -1,21 +1,29 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { useLolStore } from '@/store/lolStore'
+import type { Heroes } from '@/type'
 
 const store = useLolStore()
-const tabs = [
-  // { id: '1', name: '全部' },
-  // { id: '2', name: '上单' },
-  // { id: '3', name: '打野' },
-  // { id: '4', name: '中单' },
-  // { id: '5', name: '射手' },
-  // { id: '6', name: '辅助' }
-]
 const baseImgUrl = 'https://game.gtimg.cn/images/lol/act/img/champion/'
 
 // 直接使用 store.heroes 的值
 const heroData = ref(store.heroes)
-const currentTab = ref('1')
+const inputValue = ref('');
+const audioPath = ref('');
+const audioRef = ref(null);
+
+onMounted(() => {
+  store.getHeroes();
+})
+
+const selectHero = (hero:Heroes) => {
+  console.log(hero, 'hero')
+  audioPath.value = new URL(hero.selectAudio, import.meta.url).href
+  console.log(audioRef.value)
+  nextTick(() => {
+    audioRef.value.play();
+  })
+}
 
 // 监听 store.heroes 的变化，并更新 heroData
 watch(
@@ -25,24 +33,24 @@ watch(
   },
   { deep: true }
 )
+watch(inputValue,(val) => {
+  if(val){
+    store.searchHero(val);
+  }else{
+   store.getHeroes();
+  }
+})
 
 // 打印 store.heroes 的初始值
 </script>
 
 <template>
   <div class="heroesSelect-container">
-<!--    <div class="tabs">-->
-<!--      <div-->
-<!--        :class="{ 'tab-item': true, 'tab-active': currentTab === tab.id }"-->
-<!--        v-for="tab in tabs"-->
-<!--        :key="tab.id"-->
-<!--        @click="currentTab = tab.id"-->
-<!--      >-->
-<!--        {{ tab.name }}-->
-<!--      </div>-->
-<!--    </div>-->
+    <input type="text" placeholder="搜索" v-model="inputValue">
+    <audio controls hidden ref="audioRef" :src="audioPath">
+    </audio>
     <div class="hero-wrapper">
-      <div class="hero-item" v-for="hero in heroData" :key="hero.heroId">
+      <div class="hero-item" v-for="hero in heroData" :key="hero.heroId" @click="selectHero(hero)">
         <div class="hero-item-img">
           <img :src="baseImgUrl + hero.alias + '.png'" alt="" />
         </div>
@@ -54,10 +62,24 @@ watch(
 
 <style scoped lang="less">
 .heroesSelect-container {
+  background: #000;
   width: 1240px;
-  border: 1px solid;
   margin: 60px auto;
   min-width: 1240px;
+  input{
+    background: url(http://prodraft.leagueoflegends.com/static/media/search.00ca0d17.svg) no-repeat 10px #16171b;
+    background-size: 20px;
+    border: 0;
+    outline: 0;
+    line-height: 30px;
+    height: 30px;
+    width: 264px;
+    padding: 0 40px;
+    font-weight: 800;
+    font-size: 16px;
+    color: #fff;
+    margin: 20px 0 20px 369px;
+  }
 }
 
 .tabs {
@@ -66,7 +88,6 @@ watch(
   .tab-item {
     width: 69px;
     height: 32px;
-    border: 1px solid;
     text-align: center;
     line-height: 32px;
     cursor: pointer;
@@ -85,9 +106,13 @@ watch(
   overflow: auto;
   .hero-item {
     cursor: pointer;
+    margin-right: 4px;
     .hero-item-name {
       text-align: center;
     }
+  }
+  .hero-item:nth-of-type(10n){
+    margin-right: 0;
   }
 }
 </style>

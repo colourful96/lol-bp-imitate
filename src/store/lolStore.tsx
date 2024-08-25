@@ -14,6 +14,15 @@ export const useLolStore = defineStore('lol', {
         this.$patch({ heroes: resp.data.hero })
         return resp.data.hero
       }
+    },
+    searchHero(data:string){
+      const searchHeroes: Heroes[] = [];
+      this.heroes.forEach(h => {
+        if(h.name.includes(data)){
+          searchHeroes.push(h)
+        }
+      })
+      this.$patch({ heroes: searchHeroes});
     }
   }
 })

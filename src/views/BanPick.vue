@@ -1,9 +1,22 @@
 <script setup lang="ts">
-import { onBeforeUnmount } from 'vue'
+import { ref, nextTick } from 'vue';
+import { onBeforeUnmount, onMounted } from 'vue'
+import HeroesSelect from '@/components/HeroesSelect.vue'
 
-onBeforeUnmount(() => {
-  localStorage.removeItem('bpData')
+const audioRef = ref(null);
+const audioPath = ref('');
+
+// onBeforeUnmount(() => {
+//   localStorage.removeItem('bpData')
+// })
+onMounted(() => {
 })
+const startSelectHero = () => {
+  audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
+  nextTick(() => {
+    audioRef.value.play();
+  })
+}
 </script>
 
 <template>
@@ -94,7 +107,13 @@ onBeforeUnmount(() => {
         </div>
       </div>
   </div>
-    <div class="start">准备开始</div>
+    <div class="start" @click="startSelectHero">准备开始</div>
+    <div class="heroesSelect-container">
+      <HeroesSelect></HeroesSelect>
+    </div>
+    <audio controls hidden ref="audioRef" loop>
+      <source src="@/assets/audio/start.m4a">
+    </audio>
   </div>
 </template>
 
@@ -200,6 +219,9 @@ onBeforeUnmount(() => {
     position: relative;
     transition: background-color .35s ease-out;
   }
+}
+.red-ban-box{
+  background: #1C0508;
 }
 .start{
   background: #fff;
