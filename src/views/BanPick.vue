@@ -1,21 +1,54 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue';
+import { ref, nextTick } from 'vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
+import type { HeroDetail, Heroes } from '@/type'
 
-const audioRef = ref(null);
-const audioPath = ref('');
+const audioRef = ref(null)
+const audioPath = ref('')
+const heroesVisible = ref(false)
+const blueBanIndex = ref(-1)
+const redBanIndex = ref(-1)
+const selectStatus = ref<'ban' | 'pick'>('ban')
+const blueBanHeroes = ref<HeroDetail []>([])
+const redBanHeroes = ref<HeroDetail []>([])
 
 // onBeforeUnmount(() => {
 //   localStorage.removeItem('bpData')
 // })
 onMounted(() => {
 })
+// 开始选择英雄
 const startSelectHero = () => {
+  heroesVisible.value = true
+  blueBanIndex.value = 0
   audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
   nextTick(() => {
-    audioRef.value.play();
+    audioRef.value.play()
   })
+}
+// 选择了英雄
+const handleSelectHero = (hero: HeroDetail) => {
+  const isBlue = blueBanIndex.value > -1
+  if (isBlue) {
+    blueBanHeroes.value.push(hero)
+  } else {
+    redBanHeroes.value.push(hero)
+  }
+
+}
+// 确定选择的英雄
+const handleSure = () => {
+  // 是蓝色方还是红色方点击确定
+  const isBlue = blueBanIndex.value > -1
+  if (isBlue) {
+    redBanIndex.value = redBanHeroes.value.length;
+    blueBanIndex.value = -1
+  } else {
+    blueBanIndex.value = blueBanHeroes.value.length
+    redBanIndex.value = -1
+  }
+
 }
 </script>
 
@@ -48,19 +81,24 @@ const startSelectHero = () => {
         </div>
         <div class="blue-ban">
           <div class="blue-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 0}"></div>
+            <img class="select-image" v-if="blueBanHeroes[0]" :src="blueBanHeroes[0].skins[0].loadingImg" alt="">
           </div>
           <div class="blue-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 1}"></div>
+            <img class="select-image" v-if="blueBanHeroes[1]" :src="blueBanHeroes[1].skins[0].loadingImg" alt="">
           </div>
           <div class="blue-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 2}"></div>
+            <img class="select-image" v-if="blueBanHeroes[2]" :src="blueBanHeroes[2].skins[0].loadingImg" alt="">
           </div>
           <div class="blue-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 3}"></div>
+            <img class="select-image" v-if="blueBanHeroes[3]" :src="blueBanHeroes[3].skins[0].loadingImg" alt="">
           </div>
           <div class="blue-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 4}"></div>
+            <img class="select-image" v-if="blueBanHeroes[4]" :src="blueBanHeroes[4].skins[0].loadingImg" alt="">
           </div>
         </div>
       </div>
@@ -90,26 +128,31 @@ const startSelectHero = () => {
         </div>
         <div class="red-ban">
           <div class="red-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 0}"></div>
+            <img class="select-image" v-if="redBanHeroes[0]" :src="redBanHeroes[0].skins[0].loadingImg" alt="">
           </div>
           <div class="red-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 1}"></div>
+            <img class="select-image" v-if="redBanHeroes[1]" :src="redBanHeroes[1].skins[0].loadingImg" alt="">
           </div>
           <div class="red-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 2}"></div>
+            <img class="select-image" v-if="redBanHeroes[2]" :src="redBanHeroes[2].skins[0].loadingImg" alt="">
           </div>
           <div class="red-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 3}"></div>
+            <img class="select-image" v-if="redBanHeroes[3]" :src="redBanHeroes[3].skins[0].loadingImg" alt="">
           </div>
           <div class="red-ban-box">
-            <div class="ban-image"></div>
+            <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 4}"></div>
+            <img class="select-image" v-if="redBanHeroes[4]" :src="redBanHeroes[4].skins[0].loadingImg" alt="">
           </div>
         </div>
       </div>
-  </div>
-    <div class="start" @click="startSelectHero">准备开始</div>
-    <div class="heroesSelect-container">
-      <HeroesSelect></HeroesSelect>
+    </div>
+    <div class="start" @click="startSelectHero" v-if="!heroesVisible">准备开始</div>
+    <div class="heroesSelect-container" v-if="heroesVisible">
+      <HeroesSelect :status="selectStatus" @on-select="handleSelectHero" @on-sure="handleSure"></HeroesSelect>
     </div>
     <audio controls hidden ref="audioRef" loop>
       <source src="@/assets/audio/start.m4a">
@@ -123,6 +166,11 @@ const startSelectHero = () => {
   height: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.select-image {
+  width: 100%;
+  height: 100%;
 }
 
 .blue-team, .red-team {
@@ -193,7 +241,7 @@ const startSelectHero = () => {
   }
 }
 
-.red-pick-box, .red-ban-box{
+.red-pick-box, .red-ban-box {
   background: #1C0508;
 }
 
@@ -201,7 +249,7 @@ const startSelectHero = () => {
   margin-top: 40px;
 }
 
-.blue-ban{
+.blue-ban {
   justify-content: flex-end;
 }
 
@@ -220,10 +268,12 @@ const startSelectHero = () => {
     transition: background-color .35s ease-out;
   }
 }
-.red-ban-box{
+
+.red-ban-box {
   background: #1C0508;
 }
-.start{
+
+.start {
   background: #fff;
   color: #000;
   text-transform: uppercase;
@@ -242,7 +292,8 @@ const startSelectHero = () => {
   transform: translate(-50%);
   top: 30px;
 }
-.ban-image::after{
+
+.ban-image::after {
   content: " ";
   display: block;
   width: 56px;
@@ -253,7 +304,22 @@ const startSelectHero = () => {
   left: 50%;
   transform: translate(-50%);
 }
-.pick-name{
+
+.ban-image {
+  height: 0;
+}
+
+.blue-ban-image-select, .red-ban-image-select {
+  height: 10px;
+  background: #0B4264;
+  transition: all .5s linear;
+}
+
+.red-ban-image-select {
+  background: #BE1F37;
+}
+
+.pick-name {
   position: absolute;
   font-size: 11px;
   text-transform: uppercase;

@@ -1,28 +1,42 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, onMounted, nextTick, defineProps, defineEmits } from 'vue'
 import { useLolStore } from '@/store/lolStore'
-import type { Heroes } from '@/type'
+import type { HeroDetail, Heroes } from '@/type'
 
 const store = useLolStore()
 const baseImgUrl = 'https://game.gtimg.cn/images/lol/act/img/champion/'
 
+const props = defineProps<{ status: 'ban' | 'pick' }>()
+const emit = defineEmits<{
+  (e: 'onSelect', hero: HeroDetail): void
+  (e: 'onSure'): void
+}>()
+
 // 直接使用 store.heroes 的值
 const heroData = ref(store.heroes)
-const inputValue = ref('');
-const audioPath = ref('');
-const audioRef = ref(null);
+const inputValue = ref('')
+const audioPath = ref('')
+const audioRef = ref(null)
+const isSelectHero = ref(false);
 
 onMounted(() => {
-  store.getHeroes();
+  store.getHeroes()
 })
 
-const selectHero = (hero:Heroes) => {
-  console.log(hero, 'hero')
-  audioPath.value = new URL(hero.selectAudio, import.meta.url).href
-  console.log(audioRef.value)
+const selectHero = async (hero: Heroes) => {
+  if(!isSelectHero.value){
+    isSelectHero.value = true;
+  }
+  audioPath.value = new URL(props.status === 'ban' ? hero.banAudio : hero.selectAudio, import.meta.url).href
   nextTick(() => {
-    audioRef.value.play();
+    audioRef.value.play()
   })
+  try{
+    const detail = await store.getHeroDetail(hero.heroId);
+    emit('onSelect', detail);
+  }catch (e){
+    console.log(e);
+  }
 }
 
 // 监听 store.heroes 的变化，并更新 heroData
@@ -33,11 +47,11 @@ watch(
   },
   { deep: true }
 )
-watch(inputValue,(val) => {
-  if(val){
-    store.searchHero(val);
-  }else{
-   store.getHeroes();
+watch(inputValue, (val) => {
+  if (val) {
+    store.searchHero(val)
+  } else {
+    store.getHeroes()
   }
 })
 
@@ -47,6 +61,7 @@ watch(inputValue,(val) => {
 <template>
   <div class="heroesSelect-container">
     <input type="text" placeholder="搜索" v-model="inputValue">
+    <button class="select-btn" v-if="isSelectHero" @click="emit('onSure')">确定</button>
     <audio controls hidden ref="audioRef" :src="audioPath">
     </audio>
     <div class="hero-wrapper">
@@ -66,7 +81,8 @@ watch(inputValue,(val) => {
   width: 1240px;
   margin: 60px auto;
   min-width: 1240px;
-  input{
+
+  input {
     background: url(http://prodraft.leagueoflegends.com/static/media/search.00ca0d17.svg) no-repeat 10px #16171b;
     background-size: 20px;
     border: 0;
@@ -98,21 +114,41 @@ watch(inputValue,(val) => {
     background-color: #f40;
   }
 }
+
 .hero-wrapper {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   height: 80vh;
   overflow: auto;
+
   .hero-item {
     cursor: pointer;
     margin-right: 4px;
+
     .hero-item-name {
       text-align: center;
     }
   }
-  .hero-item:nth-of-type(10n){
+
+  .hero-item:nth-of-type(10n) {
     margin-right: 0;
   }
+}
+.select-btn{
+  background: #fff;
+  color: #000;
+  text-transform: uppercase;
+  border: 0;
+  outline: 0;
+  text-align: center;
+  line-height: 30px;
+  font-family: Merriweather Sans, sans-serif;
+  font-weight: 800;
+  font-size: 21px;
+  padding: 0 20px;
+  display: inline-block;
+  cursor: pointer;
+  margin-left: 30px;
 }
 </style>

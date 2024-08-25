@@ -39,3 +39,4 @@ npm run lint
 ```
 
 [参考地址](http://prodraft.leagueoflegends.com/)
+[开放接口](https://lol.qq.com/cguide/Guide/LCU/LCUapi.html)
