@@ -31,9 +31,17 @@ const startSelectHero = () => {
 const handleSelectHero = (hero: HeroDetail) => {
   const isBlue = blueBanIndex.value > -1
   if (isBlue) {
-    blueBanHeroes.value.push(hero)
+    if (blueBanHeroes.value[blueBanIndex.value]) {
+      blueBanHeroes.value[blueBanIndex.value] = hero
+    } else {
+      blueBanHeroes.value.push(hero)
+    }
   } else {
-    redBanHeroes.value.push(hero)
+    if (redBanHeroes.value[redBanIndex.value]) {
+      redBanHeroes.value[redBanIndex.value] = hero
+    } else {
+      redBanHeroes.value.push(hero)
+    }
   }
 
 }
@@ -42,7 +50,7 @@ const handleSure = () => {
   // 是蓝色方还是红色方点击确定
   const isBlue = blueBanIndex.value > -1
   if (isBlue) {
-    redBanIndex.value = redBanHeroes.value.length;
+    redBanIndex.value = redBanHeroes.value.length
     blueBanIndex.value = -1
   } else {
     blueBanIndex.value = blueBanHeroes.value.length
