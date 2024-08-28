@@ -2,16 +2,21 @@
 import { ref, nextTick } from 'vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
-import type { HeroDetail, Heroes } from '@/type'
+import type { HeroDetail } from '@/type'
 
 const audioRef = ref(null)
 const audioPath = ref('')
-const heroesVisible = ref(false)
-const blueBanIndex = ref(-1)
-const redBanIndex = ref(-1)
-const selectStatus = ref<'ban' | 'pick'>('ban')
-const blueBanHeroes = ref<HeroDetail []>([])
-const redBanHeroes = ref<HeroDetail []>([])
+const heroesVisible = ref(false) // 是否开始选择英雄
+const blueBanIndex = ref(-1) // 当前蓝色方ban到第几个英雄
+const redBanIndex = ref(-1) // 当前红色方ban到第几个英雄
+const selectStatus = ref<'ban' | 'pick'>('ban') // 当前是ban还是pick
+const blueBanHeroes = ref<HeroDetail []>([]) // 蓝色方ban掉的英雄
+const redBanHeroes = ref<HeroDetail []>([]) // 红色方ban掉的英雄
+const bluePickIndex = ref(-1) // 蓝色方pick到第几个英雄
+const redPickIndex = ref(-1) // 红色方pick到第几个英雄
+const bluePickHeroes = ref<HeroDetail []>([]) // 蓝色方pick的英雄
+const redPickHeroes = ref<HeroDetail []>([]) // 红色方pick的英雄
+
 
 // onBeforeUnmount(() => {
 //   localStorage.removeItem('bpData')
@@ -21,7 +26,10 @@ onMounted(() => {
 // 开始选择英雄
 const startSelectHero = () => {
   heroesVisible.value = true
-  blueBanIndex.value = 0
+  // blueBanIndex.value = 0
+  bluePickIndex.value = 0
+  console.log(bluePickIndex.value)
+  selectStatus.value = 'pick'
   audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
   nextTick(() => {
     audioRef.value.play()
@@ -29,34 +37,65 @@ const startSelectHero = () => {
 }
 // 选择了英雄
 const handleSelectHero = (hero: HeroDetail) => {
-  const isBlue = blueBanIndex.value > -1
-  if (isBlue) {
-    if (blueBanHeroes.value[blueBanIndex.value]) {
-      blueBanHeroes.value[blueBanIndex.value] = hero
+  if (selectStatus.value === 'pick') {
+    // pick
+    const isBlue = bluePickIndex.value > -1
+    if (isBlue) {
+      if (bluePickHeroes.value[bluePickIndex.value]) {
+        bluePickHeroes.value[bluePickIndex.value] = hero
+      } else {
+        bluePickHeroes.value.push(hero)
+      }
     } else {
-      blueBanHeroes.value.push(hero)
+      if (redPickHeroes.value[redPickIndex.value]) {
+        redPickHeroes.value[redPickIndex.value] = hero
+      } else {
+        redPickHeroes.value.push(hero)
+      }
     }
   } else {
-    if (redBanHeroes.value[redBanIndex.value]) {
-      redBanHeroes.value[redBanIndex.value] = hero
+    // ban
+    const isBlue = blueBanIndex.value > -1
+    if (isBlue) {
+      if (blueBanHeroes.value[blueBanIndex.value]) {
+        blueBanHeroes.value[blueBanIndex.value] = hero
+      } else {
+        blueBanHeroes.value.push(hero)
+      }
     } else {
-      redBanHeroes.value.push(hero)
+      if (redBanHeroes.value[redBanIndex.value]) {
+        redBanHeroes.value[redBanIndex.value] = hero
+      } else {
+        redBanHeroes.value.push(hero)
+      }
     }
   }
-
 }
 // 确定选择的英雄
 const handleSure = () => {
-  // 是蓝色方还是红色方点击确定
-  const isBlue = blueBanIndex.value > -1
-  if (isBlue) {
-    redBanIndex.value = redBanHeroes.value.length
-    blueBanIndex.value = -1
+  if (selectStatus.value === 'pick') {
+    // pick
+    const isBlue = bluePickIndex.value > -1
+    if (isBlue) {
+      redPickIndex.value = redPickHeroes.value.length
+      bluePickIndex.value = -1
+    } else {
+      bluePickIndex.value = bluePickHeroes.value.length
+      redPickIndex.value = -1
+    }
   } else {
-    blueBanIndex.value = blueBanHeroes.value.length
-    redBanIndex.value = -1
+    // ban
+    // 是蓝色方还是红色方点击确定
+    const isBlue = blueBanIndex.value > -1
+    if (isBlue) {
+      redBanIndex.value = redBanHeroes.value.length
+      blueBanIndex.value = -1
+    } else {
+      // 红色方肯定是最后一个ban最后一个英雄
+      blueBanIndex.value = blueBanHeroes.value.length
+      redBanIndex.value = -1
+    }
   }
-
 }
 </script>
 
@@ -67,24 +106,39 @@ const handleSure = () => {
         <div class="blue-header">蓝色</div>
         <div class="blue-pick">
           <div class="blue-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name">虚空之女</div>
+            <div class="pick-image" :class="{'blue-pick-image-select':bluePickIndex === 0}"></div>
+            <template v-if="bluePickHeroes[0]">
+              <img class="select-image" :src="bluePickHeroes[0].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ bluePickHeroes[0].hero.name }}</div>
+            </template>
           </div>
           <div class="blue-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name"></div>
+            <div class="pick-image" :class="{'blue-pick-image-select':bluePickIndex === 1}"></div>
+            <template v-if="bluePickHeroes[1]">
+              <img class="select-image" :src="bluePickHeroes[1].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ bluePickHeroes[1].hero.name }}</div>
+            </template>
           </div>
           <div class="blue-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name"></div>
+            <div class="pick-image" :class="{'blue-pick-image-select':bluePickIndex === 2}"></div>
+            <template v-if="bluePickHeroes[2]">
+              <img class="select-image" :src="bluePickHeroes[2].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ bluePickHeroes[2].hero.name }}</div>
+            </template>
           </div>
           <div class="blue-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name"></div>
+            <div class="pick-image" :class="{'blue-pick-image-select':bluePickIndex === 3}"></div>
+            <template v-if="bluePickHeroes[3]">
+              <img class="select-image" :src="bluePickHeroes[3].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ bluePickHeroes[3].hero.name }}</div>
+            </template>
           </div>
           <div class="blue-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name"></div>
+            <div class="pick-image" :class="{'blue-pick-image-select':bluePickIndex === 4}"></div>
+            <template v-if="bluePickHeroes[4]">
+              <img class="select-image" :src="bluePickHeroes[4].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ bluePickHeroes[4].hero.name }}</div>
+            </template>
           </div>
         </div>
         <div class="blue-ban">
@@ -114,24 +168,39 @@ const handleSure = () => {
         <div class="red-header">红色</div>
         <div class="red-pick">
           <div class="red-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name">虚空之女</div>
+            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 0}"></div>
+            <template v-if="redPickHeroes[0]">
+              <img class="select-image" :src="redPickHeroes[0].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ redPickHeroes[0].hero.name }}</div>
+            </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name">虚空之女</div>
+            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 1}"></div>
+            <template v-if="redPickHeroes[1]">
+              <img class="select-image" :src="redPickHeroes[1].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ redPickHeroes[1].hero.name }}</div>
+            </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name">虚空之女</div>
+            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 2}"></div>
+            <template v-if="redPickHeroes[2]">
+              <img class="select-image" :src="redPickHeroes[2].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ redPickHeroes[2].hero.name }}</div>
+            </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name">虚空之女</div>
+            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 3}"></div>
+            <template v-if="redPickHeroes[3]">
+              <img class="select-image" :src="redPickHeroes[3].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ redPickHeroes[3].hero.name }}</div>
+            </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image"></div>
-            <div class="pick-name">虚空之女</div>
+            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 4}"></div>
+            <template v-if="redPickHeroes[4]">
+              <img class="select-image" :src="redPickHeroes[4].skins[0].loadingImg" alt="">
+              <div class="pick-name">{{ redPickHeroes[4].hero.name }}</div>
+            </template>
           </div>
         </div>
         <div class="red-ban">
@@ -243,7 +312,7 @@ const handleSure = () => {
   .pick-image {
     width: 100%;
     //padding-top: 100%;
-    background: #010a0f;
+    //background: #010a0f;
     position: relative;
     transition: background-color .35s ease-out;
   }
@@ -317,13 +386,13 @@ const handleSure = () => {
   height: 0;
 }
 
-.blue-ban-image-select, .red-ban-image-select {
+.blue-ban-image-select, .red-ban-image-select, .blue-pick-image-select, .red-pick-image-select {
   height: 10px;
   background: #0B4264;
   transition: all .5s linear;
 }
 
-.red-ban-image-select {
+.red-ban-image-select, .red-pick-image-select {
   background: #BE1F37;
 }
 
