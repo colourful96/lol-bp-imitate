@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { getHeroDetail, getHeroes } from '@/api/getData'
-import type { Heroes } from '@/type'
+import type { HeroDetail, Heroes } from '@/type'
 
 export const useLolStore = defineStore('lol', {
-  state: (): { heroes: Heroes[] } => ({
-    heroes: []
+  state: (): { heroes: Heroes[], heroDetails: HeroDetail[] } => ({
+    heroes: [],
+    heroDetails: [] // 已经请求到的英雄详情集合
   }),
   getters: {},
   actions: {
@@ -25,8 +26,11 @@ export const useLolStore = defineStore('lol', {
       this.$patch({ heroes: searchHeroes })
     },
     async getHeroDetail(id: string) {
+      const exist = this.heroDetails.find(f => f.hero.heroId === id)
+      if (exist) return exist
       const response = await getHeroDetail(id)
       if (response.status === 200) {
+        this.$patch({ heroDetails: this.heroDetails.concat([response.data]) })
         return response.data
       }
       throw new Error('获取数据失败')

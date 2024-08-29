@@ -6,7 +6,7 @@ import type { HeroDetail, Heroes } from '@/type'
 const store = useLolStore()
 const baseImgUrl = 'https://game.gtimg.cn/images/lol/act/img/champion/'
 
-const props = defineProps<{ status: 'ban' | 'pick' }>()
+const props = defineProps<{ status: 'ban' | 'pick' | null }>()
 const emit = defineEmits<{
   (e: 'onSelect', hero: HeroDetail): void
   (e: 'onSure'): void
@@ -17,25 +17,28 @@ const heroData = ref(store.heroes)
 const inputValue = ref('')
 const audioPath = ref('')
 const audioRef = ref(null)
-const isSelectHero = ref(false);
+const isSelectHero = ref(false)
+const currentSelectHeroId = ref<null | string>(null) // 当前点击的英雄ID
 
 onMounted(() => {
   store.getHeroes()
 })
 
 const selectHero = async (hero: Heroes) => {
-  if(!isSelectHero.value){
-    isSelectHero.value = true;
+  if (hero.heroId === currentSelectHeroId.value || !props.status) return
+  if (!isSelectHero.value) {
+    isSelectHero.value = true
   }
+  currentSelectHeroId.value = hero.heroId
   audioPath.value = new URL(props.status === 'ban' ? hero.banAudio : hero.selectAudio, import.meta.url).href
   nextTick(() => {
     audioRef.value.play()
   })
-  try{
-    const detail = await store.getHeroDetail(hero.heroId);
-    emit('onSelect', detail);
-  }catch (e){
-    console.log(e);
+  try {
+    const detail = await store.getHeroDetail(hero.heroId)
+    emit('onSelect', detail)
+  } catch (e) {
+    console.log(e)
   }
 }
 
@@ -65,7 +68,8 @@ watch(inputValue, (val) => {
     <audio controls hidden ref="audioRef" :src="audioPath">
     </audio>
     <div class="hero-wrapper">
-      <div class="hero-item" v-for="hero in heroData" :key="hero.heroId" @click="selectHero(hero)">
+      <div class="hero-item" :class="{'unavailable': currentSelectHeroId === hero.heroId}" v-for="hero in heroData"
+           :key="hero.heroId" @click="selectHero(hero)">
         <div class="hero-item-img">
           <img :src="baseImgUrl + hero.alias + '.png'" alt="" />
         </div>
@@ -131,11 +135,17 @@ watch(inputValue, (val) => {
     }
   }
 
+  .unavailable {
+    opacity: 0.25;
+    cursor: default;
+  }
+
   .hero-item:nth-of-type(10n) {
     margin-right: 0;
   }
 }
-.select-btn{
+
+.select-btn {
   background: #fff;
   color: #000;
   text-transform: uppercase;

@@ -9,7 +9,7 @@ const audioPath = ref('')
 const heroesVisible = ref(false) // 是否开始选择英雄
 const blueBanIndex = ref(-1) // 当前蓝色方ban到第几个英雄
 const redBanIndex = ref(-1) // 当前红色方ban到第几个英雄
-const selectStatus = ref<'ban' | 'pick'>('ban') // 当前是ban还是pick
+const selectStatus = ref<'ban' | 'pick' | null>('ban') // 当前是ban还是pick
 const blueBanHeroes = ref<HeroDetail []>([]) // 蓝色方ban掉的英雄
 const redBanHeroes = ref<HeroDetail []>([]) // 红色方ban掉的英雄
 const bluePickIndex = ref(-1) // 蓝色方pick到第几个英雄
@@ -26,10 +26,7 @@ onMounted(() => {
 // 开始选择英雄
 const startSelectHero = () => {
   heroesVisible.value = true
-  // blueBanIndex.value = 0
-  bluePickIndex.value = 0
-  console.log(bluePickIndex.value)
-  selectStatus.value = 'pick'
+  blueBanIndex.value = 0
   audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
   nextTick(() => {
     audioRef.value.play()
@@ -82,6 +79,9 @@ const handleSure = () => {
     } else {
       bluePickIndex.value = bluePickHeroes.value.length
       redPickIndex.value = -1
+      if(redPickHeroes.value.length >= 5) {
+        selectStatus.value = null;
+      }
     }
   } else {
     // ban
@@ -94,6 +94,11 @@ const handleSure = () => {
       // 红色方肯定是最后一个ban最后一个英雄
       blueBanIndex.value = blueBanHeroes.value.length
       redBanIndex.value = -1
+      if (blueBanIndex.value >= 5) {
+        blueBanIndex.value = -1
+        bluePickIndex.value = 0
+        selectStatus.value = 'pick'
+      }
     }
   }
 }
@@ -168,35 +173,35 @@ const handleSure = () => {
         <div class="red-header">红色</div>
         <div class="red-pick">
           <div class="red-pick-box">
-            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 0}"></div>
+            <div class="pick-image" :class="{'red-pick-image-select':redPickIndex === 0}"></div>
             <template v-if="redPickHeroes[0]">
               <img class="select-image" :src="redPickHeroes[0].skins[0].loadingImg" alt="">
               <div class="pick-name">{{ redPickHeroes[0].hero.name }}</div>
             </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 1}"></div>
+            <div class="pick-image" :class="{'red-pick-image-select':redPickIndex === 1}"></div>
             <template v-if="redPickHeroes[1]">
               <img class="select-image" :src="redPickHeroes[1].skins[0].loadingImg" alt="">
               <div class="pick-name">{{ redPickHeroes[1].hero.name }}</div>
             </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 2}"></div>
+            <div class="pick-image" :class="{'red-pick-image-select':redPickIndex === 2}"></div>
             <template v-if="redPickHeroes[2]">
               <img class="select-image" :src="redPickHeroes[2].skins[0].loadingImg" alt="">
               <div class="pick-name">{{ redPickHeroes[2].hero.name }}</div>
             </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 3}"></div>
+            <div class="pick-image" :class="{'red-pick-image-select':redPickIndex === 3}"></div>
             <template v-if="redPickHeroes[3]">
               <img class="select-image" :src="redPickHeroes[3].skins[0].loadingImg" alt="">
               <div class="pick-name">{{ redPickHeroes[3].hero.name }}</div>
             </template>
           </div>
           <div class="red-pick-box">
-            <div class="pick-image" :class="{'blue-pick-image-select':redPickIndex === 4}"></div>
+            <div class="pick-image" :class="{'red-pick-image-select':redPickIndex === 4}"></div>
             <template v-if="redPickHeroes[4]">
               <img class="select-image" :src="redPickHeroes[4].skins[0].loadingImg" alt="">
               <div class="pick-name">{{ redPickHeroes[4].hero.name }}</div>
