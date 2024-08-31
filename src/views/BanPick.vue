@@ -16,17 +16,35 @@ const bluePickIndex = ref(-1) // 蓝色方pick到第几个英雄
 const redPickIndex = ref(-1) // 红色方pick到第几个英雄
 const bluePickHeroes = ref<HeroDetail []>([]) // 蓝色方pick的英雄
 const redPickHeroes = ref<HeroDetail []>([]) // 红色方pick的英雄
+const countdown = ref(30)
+let timer: any = null
 
-
-// onBeforeUnmount(() => {
-//   localStorage.removeItem('bpData')
-// })
+onBeforeUnmount(() => {
+  // localStorage.removeItem('bpData')
+  clearInterval(timer)
+})
 onMounted(() => {
 })
+
+// 开始倒计时
+const startCountdown = () => {
+  clearInterval(timer)
+  countdown.value = 30
+  return new Promise(resolve => {
+    timer = setInterval(() => {
+      if (countdown.value <= 0) {
+        resolve(true)
+      }
+      countdown.value--
+    }, 1000)
+  })
+}
+
 // 开始选择英雄
 const startSelectHero = () => {
   heroesVisible.value = true
   blueBanIndex.value = 0
+  startCountdown()
   audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
   nextTick(() => {
     audioRef.value.play()
@@ -76,11 +94,14 @@ const handleSure = () => {
     if (isBlue) {
       redPickIndex.value = redPickHeroes.value.length
       bluePickIndex.value = -1
+      startCountdown()
     } else {
       bluePickIndex.value = bluePickHeroes.value.length
       redPickIndex.value = -1
-      if(redPickHeroes.value.length >= 5) {
-        selectStatus.value = null;
+      if (redPickHeroes.value.length >= 5) {
+        selectStatus.value = null
+      } else {
+        startCountdown()
       }
     }
   } else {
@@ -100,7 +121,16 @@ const handleSure = () => {
         selectStatus.value = 'pick'
       }
     }
+    startCountdown()
   }
+}
+const getCountdownVisible = (type: 'blue' | 'red') => {
+  if (type === 'blue') {
+    if (bluePickIndex.value > -1 || blueBanIndex.value > -1) return true
+  } else {
+    if (redPickIndex.value > -1 || redBanIndex.value > -1) return true
+  }
+  return false
 }
 </script>
 
@@ -108,7 +138,10 @@ const handleSure = () => {
   <div class="ban-pick-container">
     <div class="bp-container">
       <div class="blue-team">
-        <div class="blue-header">蓝色</div>
+        <div class="blue-header">
+          蓝色
+          <span v-show="getCountdownVisible('blue')" class="blue-countdown">:{{ countdown }}</span>
+        </div>
         <div class="blue-pick">
           <div class="blue-pick-box">
             <div class="pick-image" :class="{'blue-pick-image-select':bluePickIndex === 0}"></div>
@@ -170,7 +203,10 @@ const handleSure = () => {
         </div>
       </div>
       <div class="red-team">
-        <div class="red-header">红色</div>
+        <div class="red-header">
+          红色
+          <span v-show="getCountdownVisible('red')" class="red-countdown">:{{ countdown }}</span>
+        </div>
         <div class="red-pick">
           <div class="red-pick-box">
             <div class="pick-image" :class="{'red-pick-image-select':redPickIndex === 0}"></div>
@@ -281,6 +317,20 @@ const handleSure = () => {
   height: 79px;
   width: 500px;
   color: #fff;
+  position: relative;
+}
+
+.blue-countdown, .red-countdown {
+  position: absolute;
+  font-size: 30px;
+}
+
+.blue-countdown {
+  right: 20px;
+}
+
+.red-countdown {
+  left: 20px;
 }
 
 .blue-header {
