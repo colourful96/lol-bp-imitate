@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue'
+import { ref, nextTick, watch, onBeforeMount, reactive } from 'vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
 import type { HeroDetail } from '@/type'
 import { useLolStore } from '@/store/lolStore'
 
-const store = useLolStore();
+const store = useLolStore()
 const audioRef = ref(null)
 const audioPath = ref('')
 const heroesVisible = ref(false) // 是否开始选择英雄
@@ -19,13 +19,25 @@ const redPickIndex = ref(-1) // 红色方pick到第几个英雄
 const bluePickHeroes = ref<HeroDetail []>([]) // 蓝色方pick的英雄
 const redPickHeroes = ref<HeroDetail []>([]) // 红色方pick的英雄
 const countdown = ref(30)
+const bpData = ref({});
 let timer: any = null
+
+onBeforeMount(() =>{
+  const _bpData = localStorage.getItem('bpData');
+  if(_bpData){
+    bpData.value = JSON.parse(_bpData)
+  }
+})
 
 onBeforeUnmount(() => {
   // localStorage.removeItem('bpData')
   clearInterval(timer)
 })
+const pageRefresh = () => {
+  console.log('页面刷新了')
+}
 onMounted(() => {
+  window.addEventListener('beforeunload', pageRefresh)
 })
 
 // 开始倒计时
@@ -69,11 +81,11 @@ const updateHeroToStore = (hero: HeroDetail) => {
     type = isBlue ? 'bluePickHeroes' : 'redPickHeroes'
     index = isBlue ? bluePickIndex.value : redPickIndex.value
   }
-  if(type){
+  if (type) {
     store.updateBpHero({
       type,
       hero,
-      index,
+      index
     })
   }
 }
@@ -195,16 +207,16 @@ const getCountdownVisible = (type: 'blue' | 'red') => {
 }
 watch(() => store.bpHeroes.blueBanHeroes, (newVal) => {
   blueBanHeroes.value = newVal
-},{deep:true})
+}, { deep: true })
 watch(() => store.bpHeroes.redBanHeroes, (newVal) => {
   redBanHeroes.value = newVal
-},{deep:true})
+}, { deep: true })
 watch(() => store.bpHeroes.bluePickHeroes, (newVal) => {
   bluePickHeroes.value = newVal
-},{deep:true})
+}, { deep: true })
 watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
   redPickHeroes.value = newVal
-},{deep:true})
+}, { deep: true })
 </script>
 
 <template>
@@ -212,7 +224,7 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
     <div class="bp-container">
       <div class="blue-team">
         <div class="blue-header">
-          蓝色
+          {{bpData.blueName || '蓝色'}}
           <span v-show="getCountdownVisible('blue')" class="blue-countdown">:{{ countdown }}</span>
         </div>
         <div class="blue-pick">
@@ -277,7 +289,7 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
       </div>
       <div class="red-team">
         <div class="red-header">
-          红色
+          {{bpData.redName || '红色'}}
           <span v-show="getCountdownVisible('red')" class="red-countdown">:{{ countdown }}</span>
         </div>
         <div class="red-pick">

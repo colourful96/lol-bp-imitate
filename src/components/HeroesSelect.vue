@@ -26,7 +26,6 @@ onMounted(() => {
 })
 
 const selectHero = async (hero: Heroes) => {
-  console.log(hero)
   if (unavailable(hero.heroId) || !props.status) return
   if (!isSelectHero.value) {
     isSelectHero.value = true
@@ -48,7 +47,6 @@ const unavailable = (id: string) => {
   if (currentSelectHeroId.value === id) {
     return true
   } else {
-    console.log(currentSureHeroes.value)
     const exist = currentSureHeroes.value.find(h => h.hero.heroId === id)
     return !!exist
   }
@@ -142,13 +140,18 @@ watch(() => store.bpHeroes, (newVal) => {
 .hero-wrapper {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   height: 80vh;
   overflow: auto;
 
   .hero-item {
+    width: 150px;
     cursor: pointer;
     margin-right: 4px;
+    font-size: 20px;
+
+    .hero-item-img{
+      text-align: center;
+    }
 
     .hero-item-name {
       text-align: center;
