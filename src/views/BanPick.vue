@@ -33,9 +33,12 @@ const startCountdown = () => {
   return new Promise(resolve => {
     timer = setInterval(() => {
       if (countdown.value <= 0) {
+        clearInterval(timer)
         resolve(true)
+      } else {
+        const _countdown = countdown.value - 1
+        countdown.value = _countdown < 10 ? `0${_countdown}` : _countdown
       }
-      countdown.value--
     }, 1000)
   })
 }
@@ -92,16 +95,71 @@ const handleSure = () => {
     // pick
     const isBlue = bluePickIndex.value > -1
     if (isBlue) {
-      redPickIndex.value = redPickHeroes.value.length
-      bluePickIndex.value = -1
-      startCountdown()
-    } else {
-      bluePickIndex.value = bluePickHeroes.value.length
-      redPickIndex.value = -1
-      if (redPickHeroes.value.length >= 5) {
-        selectStatus.value = null
-      } else {
+      // 蓝色方
+      if (bluePickIndex.value === 0) {
+        redPickIndex.value = redPickHeroes.value.length
+        bluePickIndex.value = -1
         startCountdown()
+        return
+      }
+      // 红色方二选完之后，蓝色方开始2,3位置的选择
+      if (bluePickIndex.value === 1) {
+        bluePickIndex.value = bluePickIndex.value + 1
+        startCountdown()
+        return
+      }
+      // 蓝色方2，3位置选择完成后，红色方开始3位置的选择
+      if (bluePickIndex.value === 2) {
+        redPickIndex.value = redPickHeroes.value.length
+        bluePickIndex.value = -1
+        startCountdown()
+        return
+      }
+      if (bluePickIndex.value === 3) {
+        bluePickIndex.value = bluePickIndex.value + 1
+        startCountdown()
+        return
+      }
+      // 蓝色方5位置选择完成后，红色方5位置开始选择
+      if (bluePickIndex.value === 4) {
+        redPickIndex.value = redPickHeroes.value.length
+        bluePickIndex.value = -1
+        startCountdown()
+      }
+    } else {
+      // 红色方
+      // 蓝色方一选完之后，红色方开始1，2位置的选择
+      if (redPickIndex.value === 0) {
+        redPickIndex.value = redPickIndex.value + 1
+        bluePickIndex.value = -1
+        startCountdown()
+        return
+      }
+      // 红色方二选完之后，蓝色方开始2，3位置的选择
+      if (redPickIndex.value === 1) {
+        bluePickIndex.value = bluePickHeroes.value.length
+        redPickIndex.value = -1
+        startCountdown()
+        return
+      }
+      // 红色方3位置选择之后，红色方4位置开始禁用
+      if (redPickIndex.value === 2) {
+        redBanIndex.value = redBanHeroes.value.length
+        redPickIndex.value = -1
+        selectStatus.value = 'ban'
+        startCountdown()
+        return
+      }
+      // 红色方4位置选择之后，蓝色方4，5位置选择
+      if (redPickIndex.value === 3) {
+        bluePickIndex.value = bluePickHeroes.value.length
+        redPickIndex.value = -1
+        startCountdown()
+        return
+      }
+      if (redPickIndex.value === 4) {
+        redPickIndex.value = -1
+        selectStatus.value = null
       }
     }
   } else {
@@ -109,17 +167,27 @@ const handleSure = () => {
     // 是蓝色方还是红色方点击确定
     const isBlue = blueBanIndex.value > -1
     if (isBlue) {
+      // 蓝色方禁用完最后一个英雄后，红色方4位置选择
+      if (blueBanIndex.value === 4) {
+        redPickIndex.value = redPickHeroes.value.length
+        selectStatus.value = 'pick'
+        blueBanIndex.value = -1
+        redBanIndex.value = -1
+        startCountdown()
+        return
+      }
       redBanIndex.value = redBanHeroes.value.length
       blueBanIndex.value = -1
     } else {
-      // 红色方肯定是最后一个ban最后一个英雄
       blueBanIndex.value = blueBanHeroes.value.length
-      redBanIndex.value = -1
-      if (blueBanIndex.value >= 5) {
+      // 红蓝双方3ban之后蓝色方开始选择英雄
+      if (redBanIndex.value === 2) {
+        redBanIndex.value = -1
         blueBanIndex.value = -1
         bluePickIndex.value = 0
         selectStatus.value = 'pick'
       }
+      redBanIndex.value = -1
     }
     startCountdown()
   }
