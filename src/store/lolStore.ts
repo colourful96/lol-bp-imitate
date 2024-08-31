@@ -2,10 +2,27 @@ import { defineStore } from 'pinia'
 import { getHeroDetail, getHeroes } from '@/api/getData'
 import type { HeroDetail, Heroes } from '@/type'
 
+interface State {
+  heroes: Heroes[],
+  heroDetails: HeroDetail[],
+  bpHeroes: {
+    blueBanHeroes: HeroDetail[],
+    bluePickHeroes: HeroDetail[],
+    redBanHeroes: HeroDetail[],
+    redPickHeroes: HeroDetail[]
+  }
+}
+
 export const useLolStore = defineStore('lol', {
-  state: (): { heroes: Heroes[], heroDetails: HeroDetail[] } => ({
+  state: (): State => ({
     heroes: [],
-    heroDetails: [] // 已经请求到的英雄详情集合
+    heroDetails: [], // 已经请求到的英雄详情集合
+    bpHeroes: { // 禁用和选择选择的英雄
+      blueBanHeroes: [],
+      bluePickHeroes: [],
+      redBanHeroes: [],
+      redPickHeroes: []
+    }
   }),
   getters: {},
   actions: {
@@ -34,6 +51,17 @@ export const useLolStore = defineStore('lol', {
         return response.data
       }
       throw new Error('获取数据失败')
+    },
+    updateBpHero({ type, hero, index }) {
+      const bpHero = this.bpHeroes[type];
+      let exist = [];
+      if(bpHero[index]){
+        bpHero[index] = hero;
+        exist = bpHero;
+      }else{
+        exist = bpHero.concat([hero]);
+      }
+      this.$patch({bpHeroes: {...this.bpHeroes, [type]:exist}});
     }
   }
 })

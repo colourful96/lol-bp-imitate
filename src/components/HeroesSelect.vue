@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick, defineProps, defineEmits } from 'vue'
-import { useLolStore } from '@/store/lolStore'
+import { useLolStore } from '@/store/lolStore.ts'
 import type { HeroDetail, Heroes } from '@/type'
 
 const store = useLolStore()
@@ -19,13 +19,15 @@ const audioPath = ref('')
 const audioRef = ref(null)
 const isSelectHero = ref(false)
 const currentSelectHeroId = ref<null | string>(null) // 当前点击的英雄ID
+const currentSureHeroes = ref<HeroesDetail[]>([])
 
 onMounted(() => {
   store.getHeroes()
 })
 
 const selectHero = async (hero: Heroes) => {
-  if (hero.heroId === currentSelectHeroId.value || !props.status) return
+  console.log(hero)
+  if (unavailable(hero.heroId) || !props.status) return
   if (!isSelectHero.value) {
     isSelectHero.value = true
   }
@@ -39,6 +41,16 @@ const selectHero = async (hero: Heroes) => {
     emit('onSelect', detail)
   } catch (e) {
     console.log(e)
+  }
+}
+
+const unavailable = (id: string) => {
+  if (currentSelectHeroId.value === id) {
+    return true
+  } else {
+    console.log(currentSureHeroes.value)
+    const exist = currentSureHeroes.value.find(h => h.hero.heroId === id)
+    return !!exist
   }
 }
 
@@ -57,6 +69,14 @@ watch(inputValue, (val) => {
     store.getHeroes()
   }
 })
+watch(() => store.bpHeroes, (newVal) => {
+  let newData = []
+  const keys = Object.keys(newVal)
+  keys.forEach(key => {
+    newData = newData.concat(newVal[key])
+  })
+  currentSureHeroes.value = newData
+}, { deep: true })
 
 // 打印 store.heroes 的初始值
 </script>
@@ -68,7 +88,7 @@ watch(inputValue, (val) => {
     <audio controls hidden ref="audioRef" :src="audioPath">
     </audio>
     <div class="hero-wrapper">
-      <div class="hero-item" :class="{'unavailable': currentSelectHeroId === hero.heroId}" v-for="hero in heroData"
+      <div class="hero-item" :class="{'unavailable': unavailable(hero.heroId)}" v-for="hero in heroData"
            :key="hero.heroId" @click="selectHero(hero)">
         <div class="hero-item-img">
           <img :src="baseImgUrl + hero.alias + '.png'" alt="" />

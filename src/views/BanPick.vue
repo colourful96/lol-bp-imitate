@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, watch } from 'vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
 import type { HeroDetail } from '@/type'
+import { useLolStore } from '@/store/lolStore'
 
+const store = useLolStore();
 const audioRef = ref(null)
 const audioPath = ref('')
 const heroesVisible = ref(false) // 是否开始选择英雄
@@ -53,41 +55,32 @@ const startSelectHero = () => {
     audioRef.value.play()
   })
 }
+
+// 更新英雄数据到仓库
+const updateHeroToStore = (hero: HeroDetail) => {
+  const status = selectStatus.value
+  let type, index
+  if (status === 'ban') {
+    const isBlue = blueBanIndex.value > -1
+    type = isBlue ? 'blueBanHeroes' : 'redBanHeroes'
+    index = isBlue ? blueBanIndex.value : redBanIndex.value
+  } else {
+    const isBlue = bluePickIndex.value > -1
+    type = isBlue ? 'bluePickHeroes' : 'redPickHeroes'
+    index = isBlue ? bluePickIndex.value : redPickIndex.value
+  }
+  if(type){
+    store.updateBpHero({
+      type,
+      hero,
+      index,
+    })
+  }
+}
+
 // 选择了英雄
 const handleSelectHero = (hero: HeroDetail) => {
-  if (selectStatus.value === 'pick') {
-    // pick
-    const isBlue = bluePickIndex.value > -1
-    if (isBlue) {
-      if (bluePickHeroes.value[bluePickIndex.value]) {
-        bluePickHeroes.value[bluePickIndex.value] = hero
-      } else {
-        bluePickHeroes.value.push(hero)
-      }
-    } else {
-      if (redPickHeroes.value[redPickIndex.value]) {
-        redPickHeroes.value[redPickIndex.value] = hero
-      } else {
-        redPickHeroes.value.push(hero)
-      }
-    }
-  } else {
-    // ban
-    const isBlue = blueBanIndex.value > -1
-    if (isBlue) {
-      if (blueBanHeroes.value[blueBanIndex.value]) {
-        blueBanHeroes.value[blueBanIndex.value] = hero
-      } else {
-        blueBanHeroes.value.push(hero)
-      }
-    } else {
-      if (redBanHeroes.value[redBanIndex.value]) {
-        redBanHeroes.value[redBanIndex.value] = hero
-      } else {
-        redBanHeroes.value.push(hero)
-      }
-    }
-  }
+  updateHeroToStore(hero)
 }
 // 确定选择的英雄
 const handleSure = () => {
@@ -200,6 +193,18 @@ const getCountdownVisible = (type: 'blue' | 'red') => {
   }
   return false
 }
+watch(() => store.bpHeroes.blueBanHeroes, (newVal) => {
+  blueBanHeroes.value = newVal
+},{deep:true})
+watch(() => store.bpHeroes.redBanHeroes, (newVal) => {
+  redBanHeroes.value = newVal
+},{deep:true})
+watch(() => store.bpHeroes.bluePickHeroes, (newVal) => {
+  bluePickHeroes.value = newVal
+},{deep:true})
+watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
+  redPickHeroes.value = newVal
+},{deep:true})
 </script>
 
 <template>
