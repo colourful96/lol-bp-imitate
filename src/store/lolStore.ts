@@ -62,6 +62,20 @@ export const useLolStore = defineStore('lol', {
         exist = bpHero.concat([hero])
       }
       this.$patch({ bpHeroes: { ...this.bpHeroes, [type]: exist } })
+    },
+    // 当在pick时 倒计时结束后如果没有选择英雄则自动选择
+    async findNotSelectedHero(){
+      let selectedHeroes:(HeroDetail | null)[] = [];
+      for (const key in this.bpHeroes) {
+        const item = this.bpHeroes[key];
+        selectedHeroes = selectedHeroes.concat(item).filter(f => f);
+      }
+      for (let i = 0; i < this.heroes.length; i++) {
+        const hero = this.heroes[i];
+        const exist = selectedHeroes.some(s => s?.hero.heroId === hero.heroId)
+        if(exist) continue;
+        return await this.getHeroDetail(hero.heroId);
+      }
     }
   }
 })

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick, defineProps, defineEmits } from 'vue'
 import { useLolStore } from '@/store/lolStore.ts'
-import type { HeroDetail, Heroes } from '@/type'
+import type { HeroDataType, HeroDetail, Heroes } from '@/type'
 
 const store = useLolStore()
 const baseImgUrl = 'https://game.gtimg.cn/images/lol/act/img/champion/'
@@ -19,7 +19,17 @@ const audioPath = ref('')
 const audioRef = ref(null)
 const isSelectHero = ref(false)
 const currentSelectHeroId = ref<null | string>(null) // 当前点击的英雄ID
-const currentSureHeroes = ref<HeroesDetail[]>([])
+const currentSureHeroes = ref<(HeroDetail | null)[]>([])
+
+store.$subscribe((mutation, store) => {
+  let selectedHeroes:(HeroDetail | null)[] = [];
+  for (const key in store.bpHeroes) {
+    const item = store.bpHeroes[key];
+    selectedHeroes = selectedHeroes.concat(item).filter(f => f);
+  }
+  console.log(selectedHeroes, 'selectedHeroes subscribe');
+  currentSureHeroes.value = selectedHeroes;
+})
 
 onMounted(() => {
   store.getHeroes()
@@ -48,7 +58,7 @@ const unavailable = (id: string) => {
   if (currentSelectHeroId.value === id) {
     return true
   } else {
-    const exist = currentSureHeroes.value.find(h => h.hero.heroId === id)
+    const exist = currentSureHeroes.value.find(h => h?.hero.heroId === id)
     return !!exist
   }
 }

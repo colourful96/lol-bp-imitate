@@ -41,7 +41,7 @@ onMounted(() => {
 })
 
 // 倒计时结束的操作
-const countdownComplete = () => {
+const countdownComplete = async () => {
   console.log('倒计时结束')
   if(selectStatus.value === 'ban') {
     const isBlue = blueBanIndex.value > -1;
@@ -58,12 +58,25 @@ const countdownComplete = () => {
         handleSelectHero(null);
       }
     }
-    handleSure();
   } else {
     const isBlue = bluePickIndex.value > -1;
+    if(isBlue){
+      const bluePickHeroes = store.bpHeroes.bluePickHeroes;
+      const isSelected = bluePickHeroes[bluePickIndex.value];
+      if(!isSelected){
+        const hero = await store.findNotSelectedHero();
+        handleSelectHero(hero);
+      }
+    }else{
+      const redPickHeroes = store.bpHeroes.redPickHeroes;
+      const isSelected = redPickHeroes[redPickIndex.value];
+      if(!isSelected){
+        const hero = await store.findNotSelectedHero();
+        handleSelectHero(hero);
+      }
+    }
   }
-  // handleSelectHero(null);
-  // handleSure();
+  handleSure();
 }
 
 // 开始倒计时
