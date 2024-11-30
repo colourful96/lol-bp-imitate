@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, nextTick, watch, onBeforeMount, reactive } from 'vue'
+import { ref, nextTick, watch, onBeforeMount } from 'vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
 import type { HeroDataType, HeroDetail } from '@/type'
@@ -18,23 +18,26 @@ const bluePickIndex = ref(-1) // 蓝色方pick到第几个英雄
 const redPickIndex = ref(-1) // 红色方pick到第几个英雄
 const bluePickHeroes = ref<HeroDetail []>([]) // 蓝色方pick的英雄
 const redPickHeroes = ref<HeroDetail []>([]) // 红色方pick的英雄
-const countdown = ref(10)
-const bpData = ref({});
+const countdown = ref(30)
+const bpData = ref({})
 let timer: any = null
 
-onBeforeMount(() =>{
-  const _bpData = localStorage.getItem('bpData');
-  if(_bpData){
+onBeforeMount(() => {
+  const _bpData = localStorage.getItem('bpData')
+  if (_bpData) {
     bpData.value = JSON.parse(_bpData)
   }
 })
 
 onBeforeUnmount(() => {
-  // localStorage.removeItem('bpData')
+  localStorage.removeItem('bpData')
   clearInterval(timer)
 })
-const pageRefresh = () => {
-  console.log('页面刷新了')
+const pageRefresh = (e:any) => {
+  const confirmationMessage = '您确定要离开此页面吗？';
+
+  e.returnValue = confirmationMessage;     // 标准方式
+  return confirmationMessage;
 }
 onMounted(() => {
   window.addEventListener('beforeunload', pageRefresh)
@@ -42,53 +45,52 @@ onMounted(() => {
 
 // 倒计时结束的操作
 const countdownComplete = async () => {
-  console.log('倒计时结束')
-  if(selectStatus.value === 'ban') {
-    const isBlue = blueBanIndex.value > -1;
-    if(isBlue) {
-      const blueBanHeroes = store.bpHeroes.blueBanHeroes;
-      const isSelected = blueBanHeroes[blueBanIndex.value];
-      if(!isSelected) {
-        handleSelectHero(null);
+  if (selectStatus.value === 'ban') {
+    const isBlue = blueBanIndex.value > -1
+    if (isBlue) {
+      const blueBanHeroes = store.bpHeroes.blueBanHeroes
+      const isSelected = blueBanHeroes[blueBanIndex.value]
+      if (!isSelected) {
+        handleSelectHero(null)
       }
     } else {
-      const redBanHeroes = store.bpHeroes.redBanHeroes;
-      const isSelected = redBanHeroes[redBanIndex.value];
-      if(!isSelected) {
-        handleSelectHero(null);
+      const redBanHeroes = store.bpHeroes.redBanHeroes
+      const isSelected = redBanHeroes[redBanIndex.value]
+      if (!isSelected) {
+        handleSelectHero(null)
       }
     }
   } else {
-    const isBlue = bluePickIndex.value > -1;
-    if(isBlue){
-      const bluePickHeroes = store.bpHeroes.bluePickHeroes;
-      const isSelected = bluePickHeroes[bluePickIndex.value];
-      if(!isSelected){
-        const hero = await store.findNotSelectedHero();
-        handleSelectHero(hero);
+    const isBlue = bluePickIndex.value > -1
+    if (isBlue) {
+      const bluePickHeroes = store.bpHeroes.bluePickHeroes
+      const isSelected = bluePickHeroes[bluePickIndex.value]
+      if (!isSelected) {
+        const hero = await store.findNotSelectedHero()
+        handleSelectHero(hero)
       }
-    }else{
-      const redPickHeroes = store.bpHeroes.redPickHeroes;
-      const isSelected = redPickHeroes[redPickIndex.value];
-      if(!isSelected){
-        const hero = await store.findNotSelectedHero();
-        handleSelectHero(hero);
+    } else {
+      const redPickHeroes = store.bpHeroes.redPickHeroes
+      const isSelected = redPickHeroes[redPickIndex.value]
+      if (!isSelected) {
+        const hero = await store.findNotSelectedHero()
+        handleSelectHero(hero)
       }
     }
   }
-  handleSure();
+  handleSure()
 }
 
 // 开始倒计时
 const startCountdown = () => {
   clearInterval(timer)
-  countdown.value = 10
+  // countdown.value = 30
   return new Promise(resolve => {
     timer = setInterval(() => {
       if (countdown.value <= 0) {
-        clearInterval(timer);
-        countdownComplete();
-        resolve(true);
+        clearInterval(timer)
+        countdownComplete()
+        resolve(true)
       } else {
         const _countdown = countdown.value - 1
         countdown.value = _countdown < 10 ? `0${_countdown}` : _countdown
@@ -101,7 +103,7 @@ const startCountdown = () => {
 const startSelectHero = () => {
   heroesVisible.value = true
   blueBanIndex.value = 0
-  startCountdown();
+  startCountdown()
   audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
   nextTick(() => {
     audioRef.value.play()
@@ -265,7 +267,7 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
     <div class="bp-container">
       <div class="blue-team">
         <div class="blue-header">
-          {{bpData.blueName || '蓝色'}}
+          {{ bpData.blueName || '蓝色' }}
           <span v-show="getCountdownVisible('blue')" class="blue-countdown">:{{ countdown }}</span>
         </div>
         <div class="blue-pick">
@@ -335,7 +337,7 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
       </div>
       <div class="red-team">
         <div class="red-header">
-          {{bpData.redName || '红色'}}
+          {{ bpData.redName || '红色' }}
           <span v-show="getCountdownVisible('red')" class="red-countdown">:{{ countdown }}</span>
         </div>
         <div class="red-pick">
@@ -595,7 +597,8 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
   left: 50%;
   transform: translate(-50%, 190px);
 }
-.ban-name{
+
+.ban-name {
   text-align: center;
   line-height: 150px;
 }

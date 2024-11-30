@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, nextTick, defineProps, defineEmits } from 'vue'
-import { useLolStore } from '@/store/lolStore.ts'
-import type { HeroDataType, HeroDetail, Heroes } from '@/type'
+import { useLolStore } from '@/store/lolStore'
+import type { HeroDetail, Heroes } from '@/type'
 
 const store = useLolStore()
 const baseImgUrl = 'https://game.gtimg.cn/images/lol/act/img/champion/'
@@ -22,13 +22,13 @@ const currentSelectHeroId = ref<null | string>(null) // 当前点击的英雄ID
 const currentSureHeroes = ref<(HeroDetail | null)[]>([])
 
 store.$subscribe((mutation, store) => {
-  let selectedHeroes:(HeroDetail | null)[] = [];
+  let selectedHeroes: (HeroDetail | null)[] = []
   for (const key in store.bpHeroes) {
-    const item = store.bpHeroes[key];
-    selectedHeroes = selectedHeroes.concat(item).filter(f => f);
+    const item = store.bpHeroes[key]
+    selectedHeroes = selectedHeroes.concat(item).filter(f => f)
   }
-  console.log(selectedHeroes, 'selectedHeroes subscribe');
-  currentSureHeroes.value = selectedHeroes;
+  console.log(selectedHeroes, 'selectedHeroes subscribe')
+  currentSureHeroes.value = selectedHeroes
 })
 
 onMounted(() => {
@@ -54,7 +54,7 @@ const selectHero = async (hero: Heroes) => {
 }
 
 const unavailable = (id: string) => {
-  if(!currentSelectHeroId.value) return;
+  if (!currentSelectHeroId.value) return
   if (currentSelectHeroId.value === id) {
     return true
   } else {
@@ -160,7 +160,7 @@ watch(() => store.bpHeroes, (newVal) => {
     margin-right: 4px;
     font-size: 20px;
 
-    .hero-item-img{
+    .hero-item-img {
       text-align: center;
     }
 
