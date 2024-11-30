@@ -128,3 +128,5 @@ export interface Spell {
   costupgrade: string
 }
 
+export type HeroDataType = 'blueBanHeroes' | 'bluePickHeroes' | 'redBanHeroes' | 'redPickHeroes';
+

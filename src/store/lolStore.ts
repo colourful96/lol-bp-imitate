@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia'
 import { getHeroDetail, getHeroes } from '@/api/getData'
-import type { HeroDetail, Heroes } from '@/type'
+import type { HeroDataType, HeroDetail, Heroes } from '@/type'
 
 interface State {
   heroes: Heroes[],
   heroDetails: HeroDetail[],
   bpHeroes: {
-    blueBanHeroes: HeroDetail[],
-    bluePickHeroes: HeroDetail[],
-    redBanHeroes: HeroDetail[],
-    redPickHeroes: HeroDetail[]
+    blueBanHeroes: (HeroDetail | null)[],
+    bluePickHeroes: (HeroDetail | null)[],
+    redBanHeroes: (HeroDetail | null)[],
+    redPickHeroes: (HeroDetail | null)[]
   }
 }
 
@@ -52,16 +52,16 @@ export const useLolStore = defineStore('lol', {
       }
       throw new Error('获取数据失败')
     },
-    updateBpHero({ type, hero, index }) {
-      const bpHero = this.bpHeroes[type];
-      let exist = [];
-      if(bpHero[index]){
-        bpHero[index] = hero;
-        exist = bpHero;
-      }else{
-        exist = bpHero.concat([hero]);
+    updateBpHero({ type, hero, index }: { type: HeroDataType, hero: HeroDetail | null, index: number }) {
+      const bpHero = this.bpHeroes[type]
+      let exist = []
+      if (bpHero[index]) {
+        bpHero[index] = hero
+        exist = bpHero
+      } else {
+        exist = bpHero.concat([hero])
       }
-      this.$patch({bpHeroes: {...this.bpHeroes, [type]:exist}});
+      this.$patch({ bpHeroes: { ...this.bpHeroes, [type]: exist } })
     }
   }
 })

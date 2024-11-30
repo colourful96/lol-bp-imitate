@@ -2,7 +2,7 @@
 import { ref, nextTick, watch, onBeforeMount, reactive } from 'vue'
 import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
-import type { HeroDetail } from '@/type'
+import type { HeroDataType, HeroDetail } from '@/type'
 import { useLolStore } from '@/store/lolStore'
 
 const store = useLolStore()
@@ -18,7 +18,7 @@ const bluePickIndex = ref(-1) // 蓝色方pick到第几个英雄
 const redPickIndex = ref(-1) // 红色方pick到第几个英雄
 const bluePickHeroes = ref<HeroDetail []>([]) // 蓝色方pick的英雄
 const redPickHeroes = ref<HeroDetail []>([]) // 红色方pick的英雄
-const countdown = ref(30)
+const countdown = ref(10)
 const bpData = ref({});
 let timer: any = null
 
@@ -40,15 +40,42 @@ onMounted(() => {
   window.addEventListener('beforeunload', pageRefresh)
 })
 
+// 倒计时结束的操作
+const countdownComplete = () => {
+  console.log('倒计时结束')
+  if(selectStatus.value === 'ban') {
+    const isBlue = blueBanIndex.value > -1;
+    if(isBlue) {
+      const blueBanHeroes = store.bpHeroes.blueBanHeroes;
+      const isSelected = blueBanHeroes[blueBanIndex.value];
+      if(!isSelected) {
+        handleSelectHero(null);
+      }
+    } else {
+      const redBanHeroes = store.bpHeroes.redBanHeroes;
+      const isSelected = redBanHeroes[redBanIndex.value];
+      if(!isSelected) {
+        handleSelectHero(null);
+      }
+    }
+    handleSure();
+  } else {
+    const isBlue = bluePickIndex.value > -1;
+  }
+  // handleSelectHero(null);
+  // handleSure();
+}
+
 // 开始倒计时
 const startCountdown = () => {
   clearInterval(timer)
-  countdown.value = 30
+  countdown.value = 10
   return new Promise(resolve => {
     timer = setInterval(() => {
       if (countdown.value <= 0) {
-        clearInterval(timer)
-        resolve(true)
+        clearInterval(timer);
+        countdownComplete();
+        resolve(true);
       } else {
         const _countdown = countdown.value - 1
         countdown.value = _countdown < 10 ? `0${_countdown}` : _countdown
@@ -61,7 +88,7 @@ const startCountdown = () => {
 const startSelectHero = () => {
   heroesVisible.value = true
   blueBanIndex.value = 0
-  startCountdown()
+  startCountdown();
   audioPath.value = new URL('@/assets/audio/start.m4a', import.meta.url).href
   nextTick(() => {
     audioRef.value.play()
@@ -69,9 +96,9 @@ const startSelectHero = () => {
 }
 
 // 更新英雄数据到仓库
-const updateHeroToStore = (hero: HeroDetail) => {
+const updateHeroToStore = (hero: HeroDetail | null) => {
   const status = selectStatus.value
-  let type, index
+  let type: HeroDataType, index
   if (status === 'ban') {
     const isBlue = blueBanIndex.value > -1
     type = isBlue ? 'blueBanHeroes' : 'redBanHeroes'
@@ -91,7 +118,7 @@ const updateHeroToStore = (hero: HeroDetail) => {
 }
 
 // 选择了英雄
-const handleSelectHero = (hero: HeroDetail) => {
+const handleSelectHero = (hero: HeroDetail | null) => {
   updateHeroToStore(hero)
 }
 // 确定选择的英雄
@@ -205,6 +232,7 @@ const getCountdownVisible = (type: 'blue' | 'red') => {
   }
   return false
 }
+
 watch(() => store.bpHeroes.blueBanHeroes, (newVal) => {
   blueBanHeroes.value = newVal
 }, { deep: true })
@@ -268,22 +296,27 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
           <div class="blue-ban-box">
             <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 0}"></div>
             <img class="select-image" v-if="blueBanHeroes[0]" :src="blueBanHeroes[0].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="blueBanHeroes[0] === null">空</div>
           </div>
           <div class="blue-ban-box">
             <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 1}"></div>
             <img class="select-image" v-if="blueBanHeroes[1]" :src="blueBanHeroes[1].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="blueBanHeroes[1] === null">空</div>
           </div>
           <div class="blue-ban-box">
             <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 2}"></div>
             <img class="select-image" v-if="blueBanHeroes[2]" :src="blueBanHeroes[2].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="blueBanHeroes[2] === null">空</div>
           </div>
           <div class="blue-ban-box">
             <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 3}"></div>
             <img class="select-image" v-if="blueBanHeroes[3]" :src="blueBanHeroes[3].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="blueBanHeroes[3] === null">空</div>
           </div>
           <div class="blue-ban-box">
             <div class="ban-image" :class="{'blue-ban-image-select':blueBanIndex === 4}"></div>
             <img class="select-image" v-if="blueBanHeroes[4]" :src="blueBanHeroes[4].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="blueBanHeroes[4] === null">空</div>
           </div>
         </div>
       </div>
@@ -333,22 +366,27 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
           <div class="red-ban-box">
             <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 0}"></div>
             <img class="select-image" v-if="redBanHeroes[0]" :src="redBanHeroes[0].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="redBanHeroes[0] === null">空</div>
           </div>
           <div class="red-ban-box">
             <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 1}"></div>
             <img class="select-image" v-if="redBanHeroes[1]" :src="redBanHeroes[1].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="redBanHeroes[1] === null">空</div>
           </div>
           <div class="red-ban-box">
             <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 2}"></div>
             <img class="select-image" v-if="redBanHeroes[2]" :src="redBanHeroes[2].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="redBanHeroes[2] === null">空</div>
           </div>
           <div class="red-ban-box">
             <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 3}"></div>
             <img class="select-image" v-if="redBanHeroes[3]" :src="redBanHeroes[3].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="redBanHeroes[3] === null">空</div>
           </div>
           <div class="red-ban-box">
             <div class="ban-image" :class="{'red-ban-image-select':redBanIndex === 4}"></div>
             <img class="select-image" v-if="redBanHeroes[4]" :src="redBanHeroes[4].skins[0].loadingImg" alt="">
+            <div class="ban-name" v-if="redBanHeroes[4] === null">空</div>
           </div>
         </div>
       </div>
@@ -543,5 +581,9 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
   text-align: center;
   left: 50%;
   transform: translate(-50%, 190px);
+}
+.ban-name{
+  text-align: center;
+  line-height: 150px;
 }
 </style>

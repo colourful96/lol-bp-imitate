@@ -44,6 +44,7 @@ const selectHero = async (hero: Heroes) => {
 }
 
 const unavailable = (id: string) => {
+  if(!currentSelectHeroId.value) return;
   if (currentSelectHeroId.value === id) {
     return true
   } else {
