@@ -29,6 +29,7 @@ onBeforeMount(() => {
   if (_bpData) {
     bpData.value = JSON.parse(_bpData)
   }
+  store.getHeroes()
 })
 
 onBeforeUnmount(() => {

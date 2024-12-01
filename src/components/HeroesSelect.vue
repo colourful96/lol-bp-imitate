@@ -30,10 +30,6 @@ store.$subscribe((mutation, store) => {
   currentSureHeroes.value = selectedHeroes
 })
 
-onMounted(() => {
-  store.getHeroes()
-})
-
 const selectHero = async (hero: Heroes) => {
   if (unavailable(hero.heroId) || !props.status) return
   if (!isSelectHero.value) {

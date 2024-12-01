@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { getHeroDetail, getHeroes } from '@/api/getData'
 import type { HeroDataType, HeroDetail, Heroes } from '@/type'
+import PQueue from 'p-queue'
 
 export interface BPHeroes {
   blueBanHeroes: (HeroDetail | null)[],
@@ -33,6 +34,7 @@ export const useLolStore = defineStore('lol', {
       const resp = await getHeroes()
       if (resp.status === 200) {
         this.$patch({ heroes: resp.data.hero })
+        this.getAllHeroDetails(resp.data.hero);
         return resp.data.hero
       }
     },
@@ -44,6 +46,21 @@ export const useLolStore = defineStore('lol', {
         }
       })
       this.$patch({ heroes: searchHeroes })
+    },
+    getAllHeroDetails(heroes: Heroes[]){
+      const queue = new PQueue({ concurrency: 5 })
+      const requests = heroes.map(hero => {
+        return queue.add(() => getHeroDetail(hero.heroId));
+      })
+      Promise.allSettled(requests).then(response => {
+        const hd:HeroDetail[] = [];
+        response.forEach((resp:any) => {
+          if(resp.status === 'fulfilled') {
+            hd.push(resp.value.data);
+          }
+        })
+        this.$patch({heroDetails:hd});
+      })
     },
     async getHeroDetail(id: string) {
       const exist = this.heroDetails.find(f => f.hero.heroId === id)
