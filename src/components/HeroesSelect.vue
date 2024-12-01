@@ -27,7 +27,6 @@ store.$subscribe((mutation, store) => {
     const item = store.bpHeroes[key]
     selectedHeroes = selectedHeroes.concat(item).filter(f => f)
   }
-  console.log(selectedHeroes, 'selectedHeroes subscribe')
   currentSureHeroes.value = selectedHeroes
 })
 

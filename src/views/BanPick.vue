@@ -4,8 +4,10 @@ import { onBeforeUnmount, onMounted } from 'vue'
 import HeroesSelect from '@/components/HeroesSelect.vue'
 import type { HeroDataType, HeroDetail } from '@/type'
 import { useLolStore } from '@/store/lolStore'
+import {useRouter} from 'vue-router'
 
 const store = useLolStore()
+const router = useRouter()
 const audioRef = ref<any>(null)
 const audioPath = ref('')
 const heroesVisible = ref(false) // 是否开始选择英雄
@@ -37,6 +39,7 @@ const pageRefresh = (e:any) => {
   const confirmationMessage = '您确定要离开此页面吗？';
 
   e.returnValue = confirmationMessage;     // 标准方式
+  router.replace('/')
   return confirmationMessage;
 }
 onMounted(() => {
@@ -84,7 +87,7 @@ const countdownComplete = async () => {
 // 开始倒计时
 const startCountdown = () => {
   clearInterval(timer)
-  // countdown.value = 30
+  countdown.value = 30
   return new Promise(resolve => {
     timer = setInterval(() => {
       if (countdown.value <= 0) {
