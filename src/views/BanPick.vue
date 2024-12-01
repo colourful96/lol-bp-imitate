@@ -6,20 +6,20 @@ import type { HeroDataType, HeroDetail } from '@/type'
 import { useLolStore } from '@/store/lolStore'
 
 const store = useLolStore()
-const audioRef = ref(null)
+const audioRef = ref<any>(null)
 const audioPath = ref('')
 const heroesVisible = ref(false) // 是否开始选择英雄
 const blueBanIndex = ref(-1) // 当前蓝色方ban到第几个英雄
 const redBanIndex = ref(-1) // 当前红色方ban到第几个英雄
 const selectStatus = ref<'ban' | 'pick' | null>('ban') // 当前是ban还是pick
-const blueBanHeroes = ref<HeroDetail []>([]) // 蓝色方ban掉的英雄
-const redBanHeroes = ref<HeroDetail []>([]) // 红色方ban掉的英雄
+const blueBanHeroes = ref<(HeroDetail | null) []>([]) // 蓝色方ban掉的英雄
+const redBanHeroes = ref<(HeroDetail | null) []>([]) // 红色方ban掉的英雄
 const bluePickIndex = ref(-1) // 蓝色方pick到第几个英雄
 const redPickIndex = ref(-1) // 红色方pick到第几个英雄
-const bluePickHeroes = ref<HeroDetail []>([]) // 蓝色方pick的英雄
-const redPickHeroes = ref<HeroDetail []>([]) // 红色方pick的英雄
+const bluePickHeroes = ref<(HeroDetail | null) []>([]) // 蓝色方pick的英雄
+const redPickHeroes = ref<(HeroDetail | null) []>([]) // 红色方pick的英雄
 const countdown = ref(30)
-const bpData = ref({})
+const bpData = ref<{blueName:string, matchName:string,redName:string} | null>(null)
 let timer: any = null
 
 onBeforeMount(() => {
@@ -93,7 +93,7 @@ const startCountdown = () => {
         resolve(true)
       } else {
         const _countdown = countdown.value - 1
-        countdown.value = _countdown < 10 ? `0${_countdown}` : _countdown
+        countdown.value = _countdown < 10 ? +`0${_countdown}` : _countdown
       }
     }, 1000)
   })
@@ -267,7 +267,7 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
     <div class="bp-container">
       <div class="blue-team">
         <div class="blue-header">
-          {{ bpData.blueName || '蓝色' }}
+          {{ bpData!.blueName || '蓝色' }}
           <span v-show="getCountdownVisible('blue')" class="blue-countdown">:{{ countdown }}</span>
         </div>
         <div class="blue-pick">
@@ -337,7 +337,7 @@ watch(() => store.bpHeroes.redPickHeroes, (newVal) => {
       </div>
       <div class="red-team">
         <div class="red-header">
-          {{ bpData.redName || '红色' }}
+          {{ bpData!.redName || '红色' }}
           <span v-show="getCountdownVisible('red')" class="red-countdown">:{{ countdown }}</span>
         </div>
         <div class="red-pick">

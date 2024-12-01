@@ -2,15 +2,18 @@ import { defineStore } from 'pinia'
 import { getHeroDetail, getHeroes } from '@/api/getData'
 import type { HeroDataType, HeroDetail, Heroes } from '@/type'
 
+export interface BPHeroes {
+  blueBanHeroes: (HeroDetail | null)[],
+  bluePickHeroes: (HeroDetail | null)[],
+  redBanHeroes: (HeroDetail | null)[],
+  redPickHeroes: (HeroDetail | null)[],
+  [key:string]: (HeroDetail | null)[],
+}
+
 interface State {
   heroes: Heroes[],
   heroDetails: HeroDetail[],
-  bpHeroes: {
-    blueBanHeroes: (HeroDetail | null)[],
-    bluePickHeroes: (HeroDetail | null)[],
-    redBanHeroes: (HeroDetail | null)[],
-    redPickHeroes: (HeroDetail | null)[]
-  }
+  bpHeroes: BPHeroes,
 }
 
 export const useLolStore = defineStore('lol', {
@@ -21,7 +24,7 @@ export const useLolStore = defineStore('lol', {
       blueBanHeroes: [],
       bluePickHeroes: [],
       redBanHeroes: [],
-      redPickHeroes: []
+      redPickHeroes: [],
     }
   }),
   getters: {},
@@ -76,6 +79,7 @@ export const useLolStore = defineStore('lol', {
         if(exist) continue;
         return await this.getHeroDetail(hero.heroId);
       }
+      return null;
     }
   }
 })

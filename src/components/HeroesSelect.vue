@@ -16,7 +16,7 @@ const emit = defineEmits<{
 const heroData = ref(store.heroes)
 const inputValue = ref('')
 const audioPath = ref('')
-const audioRef = ref(null)
+const audioRef = ref<any>(null)
 const isSelectHero = ref(false)
 const currentSelectHeroId = ref<null | string>(null) // 当前点击的英雄ID
 const currentSureHeroes = ref<(HeroDetail | null)[]>([])
@@ -43,7 +43,9 @@ const selectHero = async (hero: Heroes) => {
   currentSelectHeroId.value = hero.heroId
   audioPath.value = new URL(props.status === 'ban' ? hero.banAudio : hero.selectAudio, import.meta.url).href
   nextTick(() => {
-    audioRef.value.play()
+    if(audioRef.value){
+      audioRef.value.play()
+    }
   })
   try {
     const detail = await store.getHeroDetail(hero.heroId)
@@ -79,7 +81,7 @@ watch(inputValue, (val) => {
   }
 })
 watch(() => store.bpHeroes, (newVal) => {
-  let newData = []
+  let newData: (HeroDetail | null)[] = []
   const keys = Object.keys(newVal)
   keys.forEach(key => {
     newData = newData.concat(newVal[key])
