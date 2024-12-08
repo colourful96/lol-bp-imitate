@@ -40,6 +40,8 @@ const pageRefresh = (e:any) => {
   const confirmationMessage = '您确定要离开此页面吗？';
 
   e.returnValue = confirmationMessage;     // 标准方式
+  localStorage.removeItem('bpData')
+  clearInterval(timer)
   router.replace('/')
   return confirmationMessage;
 }
